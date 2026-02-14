@@ -28,12 +28,18 @@ import {
 import MultiSelect from "./MultiSelect";
 import SearchableSelect from "./SearchableSelect";
 
+import { useLabelCounts } from "@/hooks/useLabelCounts";
+import { useLanguageCounts } from "@/hooks/useLanguageCounts";
+
 interface FilterSidebarProps {
   filters: SearchFilters;
   onChange: (filters: SearchFilters) => void;
 }
 
 const FilterSidebar = ({ filters, onChange }: FilterSidebarProps) => {
+  const { counts: labelCounts } = useLabelCounts();
+  const { counts: languageCounts } = useLanguageCounts();
+
   const hasActiveFilters =
     filters.labels.length > 0 ||
     filters.language !== "" ||
@@ -135,6 +141,7 @@ const FilterSidebar = ({ filters, onChange }: FilterSidebarProps) => {
         <MultiSelect
           options={AVAILABLE_LABELS}
           selected={filters.labels}
+          counts={labelCounts}
           onChange={(labels) => onChange({ ...filters, labels })}
           placeholder="Select labels..."
           searchPlaceholder="Search labels..."
@@ -149,6 +156,7 @@ const FilterSidebar = ({ filters, onChange }: FilterSidebarProps) => {
         <SearchableSelect
           options={AVAILABLE_LANGUAGES}
           value={filters.language}
+          counts={languageCounts}
           onChange={(language) => onChange({ ...filters, language })}
           placeholder="All languages"
           searchPlaceholder="Search languages..."

@@ -170,7 +170,11 @@ export function useGitHubSearch(
     }
   });
 
-  const issues = data?.pages.flatMap((page) => page.items) || [];
+  // Deduplicate issues by ID to prevent "duplicate key" warnings when pages overlap
+  const allIssues = data?.pages.flatMap((page) => page.items) || [];
+  const issues = Array.from(
+    new Map(allIssues.map((issue) => [issue.id, issue])).values()
+  );
   const totalCount = data?.pages[0]?.total_count || 0;
 
   // Handle rate limit error specifically if it bubbles up

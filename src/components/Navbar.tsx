@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Github, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import BookmarksPanel from "./BookmarksPanel";
 import AuthTokenPanel from "./AuthTokenPanel";
@@ -34,8 +34,8 @@ const Navbar = () => {
       <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Github className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 flex items-center justify-center shrink-0">
+              <img src="/logo.svg" alt="GitFinder Logo" className="h-8 w-8" />
             </div>
             <span className="font-bold text-foreground tracking-tight text-lg">
               Git<span className="text-primary">Finder</span>

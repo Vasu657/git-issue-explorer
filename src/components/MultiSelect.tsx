@@ -25,7 +25,8 @@ const MultiSelect = ({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   maxDisplay = 5,
-}: MultiSelectProps) => {
+  counts,
+}: MultiSelectProps & { counts?: Record<string, number> }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +73,13 @@ const MultiSelect = ({
           className="w-[var(--radix-popover-trigger-width)] p-0 bg-popover border-border/80"
           align="start"
         >
+          {/* Header with Total Count */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-muted/20">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+              Total Labels: {options.length}
+            </span>
+          </div>
+
           {/* Search */}
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/50">
             <Search className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
@@ -107,7 +115,7 @@ const MultiSelect = ({
                   key={opt}
                   onClick={() => toggle(opt)}
                   className={cn(
-                    "flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm rounded-md transition-colors text-left",
+                    "flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm rounded-md transition-colors text-left group",
                     selected.includes(opt)
                       ? "bg-primary/10 text-foreground"
                       : "text-foreground/80 hover:bg-muted/50"
@@ -125,7 +133,12 @@ const MultiSelect = ({
                       <Check className="h-3 w-3 text-primary-foreground" />
                     )}
                   </div>
-                  <span className="truncate">{opt}</span>
+                  <span className="truncate flex-1">{opt}</span>
+                  {counts && counts[opt] !== undefined && (
+                    <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full group-hover:bg-background transition-colors">
+                      {counts[opt]}
+                    </span>
+                  )}
                 </button>
               ))
             )}
