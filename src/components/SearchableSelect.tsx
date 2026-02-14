@@ -24,8 +24,7 @@ const SearchableSelect = ({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   allLabel = "All",
-  counts,
-}: SearchableSelectProps & { counts?: Record<string, number> }) => {
+}: SearchableSelectProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -135,11 +134,6 @@ const SearchableSelect = ({
                   )}
                 </div>
                 <span className="truncate flex-1">{opt}</span>
-                {counts && counts[opt] !== undefined && (
-                  <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full group-hover:bg-background transition-colors">
-                    {counts[opt]}
-                  </span>
-                )}
               </button>
             ))
           )}

@@ -25,8 +25,7 @@ const MultiSelect = ({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   maxDisplay = 5,
-  counts,
-}: MultiSelectProps & { counts?: Record<string, number> }) => {
+}: MultiSelectProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -134,11 +133,6 @@ const MultiSelect = ({
                     )}
                   </div>
                   <span className="truncate flex-1">{opt}</span>
-                  {counts && counts[opt] !== undefined && (
-                    <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full group-hover:bg-background transition-colors">
-                      {counts[opt]}
-                    </span>
-                  )}
                 </button>
               ))
             )}

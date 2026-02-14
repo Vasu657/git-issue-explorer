@@ -16,6 +16,7 @@ import IssueList from "@/components/IssueList";
 import IssueDetailsModal from "@/components/IssueDetailsModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useGitHubSearch } from "@/hooks/useGitHubSearch";
+import { useDynamicLanguages } from "@/hooks/useDynamicLanguages";
 import type { SearchFilters } from "@/types/github";
 import { DEFAULT_FILTERS } from "@/types/github";
 
@@ -36,6 +37,10 @@ const Index = () => {
     hasMore,
     loadMore,
   } = useGitHubSearch(debouncedQuery, filters);
+
+  // Discover languages dynamically from search results
+  const { languages, discoveredLanguages } = useDynamicLanguages(issues);
+
 
   const handleSuggestedSearch = useCallback((term: string) => {
     setRawQuery(term);
@@ -97,7 +102,7 @@ const Index = () => {
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-6">
-                <FilterSidebar filters={filters} onChange={setFilters} />
+                <FilterSidebar filters={filters} onChange={setFilters} languages={languages} />
               </div>
             </SheetContent>
           </Sheet>
@@ -107,7 +112,7 @@ const Index = () => {
           {/* Desktop sidebar */}
           <aside className="hidden lg:block w-72 shrink-0">
             <div className="sticky top-20 p-5 rounded-2xl border border-border/50 bg-card/40 max-h-[calc(100vh-5rem)] overflow-y-auto overflow-x-hidden hide-scrollbar pr-2 min-w-0">
-              <FilterSidebar filters={filters} onChange={setFilters} />
+              <FilterSidebar filters={filters} onChange={setFilters} languages={languages} />
             </div>
           </aside>
 

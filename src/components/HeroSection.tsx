@@ -1,6 +1,10 @@
 import { GitBranch, Globe, Zap } from "lucide-react";
+import { useGitHubLanguages } from "@/hooks/useGitHubLanguages";
 
 const HeroSection = () => {
+  const { languages } = useGitHubLanguages();
+  const languageCount = languages.length;
+
   return (
     <section className="relative overflow-hidden">
       {/* Animated gradient orbs */}
@@ -41,7 +45,11 @@ const HeroSection = () => {
         <div className="flex items-center justify-center gap-4 sm:gap-8 mt-12 animate-fade-in stagger-3">
           <StatCard icon={<GitBranch className="h-4 w-4" />} value="48+" label="Labels" />
           <div className="h-10 w-px bg-border/50" />
-          <StatCard icon={<Globe className="h-4 w-4" />} value="55+" label="Languages" />
+          <StatCard
+            icon={<Globe className="h-4 w-4" />}
+            value={languageCount > 0 ? `${languageCount}+` : "---"}
+            label="Languages"
+          />
           <div className="h-10 w-px bg-border/50" />
           <StatCard icon={<Zap className="h-4 w-4" />} value="Live" label="Real-time" />
         </div>

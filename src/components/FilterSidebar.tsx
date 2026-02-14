@@ -19,7 +19,6 @@ import {
 import type { SearchFilters } from "@/types/github";
 import {
   AVAILABLE_LABELS,
-  AVAILABLE_LANGUAGES,
   DEFAULT_FILTERS,
   AVAILABLE_TYPES,
   AVAILABLE_PRIORITIES,
@@ -28,17 +27,13 @@ import {
 import MultiSelect from "./MultiSelect";
 import SearchableSelect from "./SearchableSelect";
 
-import { useLabelCounts } from "@/hooks/useLabelCounts";
-import { useLanguageCounts } from "@/hooks/useLanguageCounts";
-
 interface FilterSidebarProps {
   filters: SearchFilters;
   onChange: (filters: SearchFilters) => void;
+  languages: string[];
 }
 
-const FilterSidebar = ({ filters, onChange }: FilterSidebarProps) => {
-  const { counts: labelCounts } = useLabelCounts();
-  const { counts: languageCounts } = useLanguageCounts();
+const FilterSidebar = ({ filters, onChange, languages }: FilterSidebarProps) => {
 
   const hasActiveFilters =
     filters.labels.length > 0 ||
@@ -141,7 +136,6 @@ const FilterSidebar = ({ filters, onChange }: FilterSidebarProps) => {
         <MultiSelect
           options={AVAILABLE_LABELS}
           selected={filters.labels}
-          counts={labelCounts}
           onChange={(labels) => onChange({ ...filters, labels })}
           placeholder="Select labels..."
           searchPlaceholder="Search labels..."
@@ -154,9 +148,8 @@ const FilterSidebar = ({ filters, onChange }: FilterSidebarProps) => {
       {/* Language - Searchable select */}
       <FilterSection icon={<Code className="h-3.5 w-3.5" />} title="Language">
         <SearchableSelect
-          options={AVAILABLE_LANGUAGES}
+          options={languages}
           value={filters.language}
-          counts={languageCounts}
           onChange={(language) => onChange({ ...filters, language })}
           placeholder="All languages"
           searchPlaceholder="Search languages..."

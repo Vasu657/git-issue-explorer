@@ -1,7 +1,7 @@
 import { ExternalLink, MessageSquare, Bookmark } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import type { GitHubIssue } from "@/types/github";
-import { AVAILABLE_LANGUAGES } from "@/types/github";
 import { useBookmarks } from "@/hooks/useBookmarks";
 
 interface IssueCardProps {
@@ -101,14 +101,24 @@ const IssueCard = ({ issue, index, onClick }: IssueCardProps) => {
           </div>
         )}
 
-        {/* Language badge: try to infer from labels */}
-        {(() => {
-          const lang = issue.labels
-            .map((l) => l.name)
-            .find((n) => AVAILABLE_LANGUAGES.some((a) => a.toLowerCase() === n.toLowerCase()));
-          if (lang) return (
+        {/* Language badge: try to infer from labels or repo */}
+        {issue.labels && issue.labels.length > 0 && (() => {
+          // Try to find a language-like label (common patterns: single word, capitalized)
+          const potentialLang = issue.labels
+            .map(l => l.name)
+            .find((n) => {
+              // Simple heuristic: check if it's a single word capitalized name
+              // or matches common programming language patterns
+              const isCapitalized = /^[A-Z][a-z]+$/.test(n);
+              const isAllCaps = /^[A-Z]+$/.test(n);
+              const isProgrammingLang = /^(JavaScript|TypeScript|Python|Java|C\+\+|C#|Go|Rust|Ruby|PHP|Swift|Kotlin|Dart|Vue|React|Angular)$/i.test(n);
+              return (isCapitalized || isAllCaps || isProgrammingLang) && n.length > 1 && n.length < 15;
+            });
+          if (potentialLang) return (
             <div className="inline-block mt-2">
-              <span className="text-[10px] px-2 py-1 rounded-full bg-muted/20 text-muted-foreground font-medium">{lang}</span>
+              <Badge variant="secondary" className="text-[10px] px-2 py-1 font-medium">
+                {potentialLang}
+              </Badge>
             </div>
           );
           return null;
