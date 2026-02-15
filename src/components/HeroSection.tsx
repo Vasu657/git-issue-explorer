@@ -1,9 +1,19 @@
 import { GitBranch, Globe, Zap } from "lucide-react";
 import { useGitHubLanguages } from "@/hooks/useGitHubLanguages";
+import { AVAILABLE_LABELS } from "@/types/github";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  labelCount?: number;
+}
+
+const HeroSection = ({ labelCount }: HeroSectionProps) => {
   const { languages } = useGitHubLanguages();
   const languageCount = languages.length;
+
+  // Use provided count, or fallback to our static baseline if 0 or undefined
+  const displayLabelCount = (labelCount && labelCount > 0)
+    ? labelCount
+    : AVAILABLE_LABELS.length;
 
   return (
     <section className="relative overflow-hidden">
@@ -43,7 +53,11 @@ const HeroSection = () => {
 
         {/* Stats row */}
         <div className="flex items-center justify-center gap-4 sm:gap-8 mt-12 animate-fade-in stagger-3">
-          <StatCard icon={<GitBranch className="h-4 w-4" />} value="48+" label="Labels" />
+          <StatCard
+            icon={<GitBranch className="h-4 w-4" />}
+            value={`${displayLabelCount}+`}
+            label="Labels"
+          />
           <div className="h-10 w-px bg-border/50" />
           <StatCard
             icon={<Globe className="h-4 w-4" />}

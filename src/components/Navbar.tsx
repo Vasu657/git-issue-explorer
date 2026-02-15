@@ -10,15 +10,18 @@ import WelcomeOverlay from "./WelcomeOverlay";
 const Navbar = () => {
   const { user } = useAuthToken();
   const { toast } = useToast();
-  const hasWelcomed = useRef(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-    if (user && !hasWelcomed.current) {
-      setShowWelcome(true);
-      hasWelcomed.current = true;
-    } else if (!user) {
-      hasWelcomed.current = false;
+    if (user) {
+      const welcomedKey = `gf:welcomed:${user.id || user.login}`;
+      const hasBeenWelcomed = localStorage.getItem(welcomedKey);
+
+      if (!hasBeenWelcomed) {
+        setShowWelcome(true);
+        localStorage.setItem(welcomedKey, "true");
+      }
+    } else {
       setShowWelcome(false);
     }
   }, [user]);

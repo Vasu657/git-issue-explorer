@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,13 +18,74 @@ import IssueDetailsModal from "@/components/IssueDetailsModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useGitHubSearch } from "@/hooks/useGitHubSearch";
 import { useDynamicLanguages } from "@/hooks/useDynamicLanguages";
+import { useDynamicLabels } from "@/hooks/useDynamicLabels";
 import type { SearchFilters } from "@/types/github";
 import { DEFAULT_FILTERS } from "@/types/github";
+import { useStorage } from "@/context/StorageContext";
 
 const Index = () => {
-  const [rawQuery, setRawQuery] = useState("");
+  const { filters: persistedFilters, setFilters: setPersistedFilters, isHydrated } = useStorage();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isInitialSync = useRef(true);
+
+  const [rawQuery, setRawQuery] = useState(() => searchParams.get("q") || "");
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const debouncedQuery = useDebounce(rawQuery, 450);
+
+  // Initialize filters from URL or Storage
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!isInitialSync.current) return;
+
+    const urlFilters: Partial<SearchFilters> = {};
+    const labels = searchParams.get("labels");
+    if (labels) urlFilters.labels = labels.split(",");
+
+    const lang = searchParams.get("lang");
+    if (lang) urlFilters.language = lang;
+
+    const state = searchParams.get("state");
+    if (state === "open" || state === "closed") urlFilters.state = state;
+
+    const sort = searchParams.get("sort");
+    if (sort) urlFilters.sort = sort as SearchFilters["sort"];
+
+    const order = searchParams.get("order");
+    if (order === "asc" || order === "desc") urlFilters.order = order;
+
+    const unassigned = searchParams.get("unassigned");
+    if (unassigned !== null) urlFilters.unassigned = unassigned === "true";
+
+    // Priority to URL, then Storage, then Default
+    const mergedFilters = {
+      ...DEFAULT_FILTERS,
+      ...(persistedFilters || {}),
+      ...urlFilters
+    };
+
+    setFilters(mergedFilters);
+    isInitialSync.current = false;
+  }, [isHydrated, searchParams, persistedFilters]);
+
+  // Sync state to URL and Storage
+  useEffect(() => {
+    if (isInitialSync.current) return;
+
+    // Update URL
+    const params: Record<string, string> = {};
+    if (debouncedQuery) params.q = debouncedQuery;
+    if (filters.labels.length > 0) params.labels = filters.labels.join(",");
+    if (filters.language) params.lang = filters.language;
+    if (filters.state !== "open") params.state = filters.state;
+    if (filters.sort !== "created") params.sort = filters.sort;
+    if (filters.order !== "desc") params.order = filters.order;
+    if (filters.unassigned) params.unassigned = "true";
+
+    setSearchParams(params, { replace: true });
+
+    // Update Storage
+    setPersistedFilters(filters);
+  }, [filters, debouncedQuery, setSearchParams, setPersistedFilters]);
 
   const [selectedIssue, setSelectedIssue] = useState<import("@/types/github").GitHubIssue | null>(null);
 
@@ -40,6 +102,10 @@ const Index = () => {
 
   // Discover languages dynamically from search results
   const { languages, discoveredLanguages } = useDynamicLanguages(issues);
+
+  // Discover labels dynamically from search results
+  const { labels: dynamicLabels, isDiscovering: labelsLoading } = useDynamicLabels(issues, debouncedQuery);
+  const availableLabelNames = dynamicLabels.map(l => l.name);
 
 
   const handleSuggestedSearch = useCallback((term: string) => {
@@ -61,7 +127,7 @@ const Index = () => {
       <Navbar />
 
       {/* Hero */}
-      <HeroSection />
+      <HeroSection labelCount={dynamicLabels.length} />
 
       {/* Search bar */}
       <SearchBar
@@ -102,7 +168,13 @@ const Index = () => {
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-6">
-                <FilterSidebar filters={filters} onChange={setFilters} languages={languages} />
+                <FilterSidebar
+                  filters={filters}
+                  onChange={setFilters}
+                  languages={languages}
+                  availableLabels={dynamicLabels as any}
+                  isLoadingLabels={labelsLoading}
+                />
               </div>
             </SheetContent>
           </Sheet>
@@ -112,7 +184,13 @@ const Index = () => {
           {/* Desktop sidebar */}
           <aside className="hidden lg:block w-72 shrink-0">
             <div className="sticky top-20 p-5 rounded-2xl border border-border/50 bg-card/40 max-h-[calc(100vh-5rem)] overflow-y-auto overflow-x-hidden hide-scrollbar pr-2 min-w-0">
-              <FilterSidebar filters={filters} onChange={setFilters} languages={languages} />
+              <FilterSidebar
+                filters={filters}
+                onChange={setFilters}
+                languages={languages}
+                availableLabels={dynamicLabels as any}
+                isLoadingLabels={labelsLoading}
+              />
             </div>
           </aside>
 

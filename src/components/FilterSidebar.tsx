@@ -31,9 +31,17 @@ interface FilterSidebarProps {
   filters: SearchFilters;
   onChange: (filters: SearchFilters) => void;
   languages: string[];
+  availableLabels: (string | { name: string; color?: string })[];
+  isLoadingLabels?: boolean;
 }
 
-const FilterSidebar = ({ filters, onChange, languages }: FilterSidebarProps) => {
+const FilterSidebar = ({
+  filters,
+  onChange,
+  languages,
+  availableLabels,
+  isLoadingLabels
+}: FilterSidebarProps) => {
 
   const hasActiveFilters =
     filters.labels.length > 0 ||
@@ -134,13 +142,21 @@ const FilterSidebar = ({ filters, onChange, languages }: FilterSidebarProps) => 
       {/* Labels - Multi-select dropdown */}
       <FilterSection icon={<Tag className="h-3.5 w-3.5" />} title="Labels">
         <MultiSelect
-          options={AVAILABLE_LABELS}
-          selected={filters.labels}
+          options={availableLabels}
+          selected={filters.labels || []}
           onChange={(labels) => onChange({ ...filters, labels })}
-          placeholder="Select labels..."
-          searchPlaceholder="Search labels..."
+          placeholder="Search labels..."
+          searchPlaceholder="Filter labels..."
           maxDisplay={3}
         />
+        {isLoadingLabels && (
+          <div className="flex items-center gap-2 mt-2 px-1 animate-pulse">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+            <span className="text-[10px] text-muted-foreground/70 font-medium italic">
+              Discovering more labels...
+            </span>
+          </div>
+        )}
       </FilterSection>
 
       <Separator className="bg-border/50" />

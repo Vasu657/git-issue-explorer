@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface MultiSelectProps {
-  options: string[];
+  options: (string | { name: string; color?: string })[];
   selected: string[];
   onChange: (selected: string[]) => void;
   placeholder?: string;
@@ -30,8 +30,12 @@ const MultiSelect = ({
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const filtered = options.filter((opt) =>
-    opt.toLowerCase().includes(search.toLowerCase())
+  const normalizedOptions = options.map(opt =>
+    typeof opt === 'string' ? { name: opt } : opt
+  );
+
+  const filtered = normalizedOptions.filter((opt) =>
+    opt.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const toggle = (value: string) => {
@@ -111,11 +115,11 @@ const MultiSelect = ({
             ) : (
               filtered.map((opt) => (
                 <button
-                  key={opt}
-                  onClick={() => toggle(opt)}
+                  key={opt.name}
+                  onClick={() => toggle(opt.name)}
                   className={cn(
                     "flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm rounded-md transition-colors text-left group",
-                    selected.includes(opt)
+                    selected.includes(opt.name)
                       ? "bg-primary/10 text-foreground"
                       : "text-foreground/80 hover:bg-muted/50"
                   )}
@@ -123,16 +127,22 @@ const MultiSelect = ({
                   <div
                     className={cn(
                       "h-4 w-4 rounded border flex items-center justify-center shrink-0 transition-colors",
-                      selected.includes(opt)
+                      selected.includes(opt.name)
                         ? "bg-primary border-primary"
                         : "border-border/80"
                     )}
                   >
-                    {selected.includes(opt) && (
+                    {selected.includes(opt.name) && (
                       <Check className="h-3 w-3 text-primary-foreground" />
                     )}
                   </div>
-                  <span className="truncate flex-1">{opt}</span>
+                  {opt.color && (
+                    <div
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: `#${opt.color}` }}
+                    />
+                  )}
+                  <span className="truncate flex-1">{opt.name}</span>
                 </button>
               ))
             )}
