@@ -63,6 +63,10 @@ const EmptyState = ({
             </span>
           )}
         </p>
+        <div className="mt-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary max-w-xs transition-all animate-in slide-in-from-bottom-2 duration-500">
+          <p className="font-bold mb-1 uppercase tracking-wider">Pro Tip</p>
+          <p className="opacity-90">Add a GitHub Personal Access Token via the <span className="font-bold">Auth</span> button to increase your limit to 5,000 requests per hour.</p>
+        </div>
       </div>
     );
   }

@@ -29,19 +29,38 @@ export interface GitHubIssue {
   body: string | null;
 }
 
+export interface GitHubRepository {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  stargazers_count: number;
+  forks_count: number;
+  language: string | null;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
 export interface SearchResponse {
   total_count: number;
   incomplete_results: boolean;
   items: GitHubIssue[];
 }
 
+export interface RepositorySearchResponse {
+  total_count: number;
+  incomplete_results: boolean;
+  items: GitHubRepository[];
+}
+
 export interface SearchFilters {
   labels: string[];
   language: string;
   state: "open" | "closed";
-  issueType: string; // e.g. Bug, Feature
   priority: string; // e.g. critical, high
-  labelStatus: string; // e.g. In Progress, Ready
   sort: "created" | "updated" | "comments";
   order: "desc" | "asc";
   unassigned: boolean;
@@ -58,9 +77,7 @@ export const DEFAULT_FILTERS: SearchFilters = {
   labels: [],
   language: "",
   state: "open",
-  issueType: "",
   priority: "",
-  labelStatus: "",
   sort: "created",
   order: "desc",
   unassigned: false,
@@ -107,6 +124,4 @@ export const AVAILABLE_LABELS = [
   "stale",
 ];
 
-export const AVAILABLE_TYPES = ["Bug", "Feature", "Enhancement", "Question"];
 export const AVAILABLE_PRIORITIES = ["Critical", "High", "Medium", "Low"];
-export const AVAILABLE_STATUSES = ["In Progress", "Ready", "Needs Review", "Backlog"];

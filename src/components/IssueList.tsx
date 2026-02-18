@@ -1,5 +1,5 @@
-import { Loader2 } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { Loader2, ArrowUp } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { GitHubIssue } from "@/types/github";
 import IssueCard from "./IssueCard";
@@ -32,6 +32,27 @@ const IssueList = ({
 }: IssueListProps) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   useEffect(() => {
     loadingRef.current = loading;
@@ -138,6 +159,22 @@ const IssueList = ({
           </div>
         </div>
       )}
+
+      {/* Floating Scroll to Top Button */}
+      <div
+        className={`fixed bottom-8 right-8 z-50 transition-all duration-300 transform ${showScrollTop ? "scale-100 opacity-100 translate-y-0" : "scale-0 opacity-0 translate-y-10"
+          }`}
+      >
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={scrollToTop}
+          className="h-10 w-10 rounded-full glass-strong border-primary/20 hover:border-primary/50 shadow-lg text-primary hover:bg-primary/5 hover:scale-110 active:scale-95 transition-all shadow-primary/10"
+          title="Scroll to top"
+        >
+          <ArrowUp className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

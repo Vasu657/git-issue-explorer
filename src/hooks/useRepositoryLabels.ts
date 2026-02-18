@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthToken } from "./useAuthToken";
 import type { GitHubIssue, GitHubLabel } from "@/types/github";
+import { isRateLimited } from "@/lib/github-cache";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -54,7 +55,9 @@ async function fetchRepoLabels(
         );
 
         if (!response.ok) {
-            console.warn(`Failed to fetch labels for ${repoFullName}: ${response.status}`);
+            if (response.status !== 403 && response.status !== 429) {
+                console.warn(`Failed to fetch labels for ${repoFullName}: ${response.status}`);
+            }
             return [];
         }
 
@@ -150,19 +153,29 @@ export function useRepositoryLabels(
         queryFn: async () => {
             const repositories = new Set(extractedRepos);
 
+            if (isRateLimited()) {
+                return { labels: [], labelMap: new Map() };
+            }
+
             // Proactively search for top repos for the query to get labels faster
-            // ONLY if the query is non-empty. This is our "Broad Discovery" step.
-            if (query.trim()) {
+            // ONLY if the query is non-empty and we HAVE A TOKEN.
+            // Broad discovery is too expensive for unauthenticated users.
+            if (query.trim() && token) {
                 const searchedRepos = await fetchTopRepositories(query, token);
                 searchedRepos.forEach(repo => repositories.add(repo));
             }
 
-            const repoList = Array.from(repositories).slice(0, config.sampleSize);
+            // Use extremely conservative sampling when unauthenticated
+            const effectiveSampleSize = !token ? Math.min(config.sampleSize, 2) : config.sampleSize;
+            const repoList = Array.from(repositories).slice(0, effectiveSampleSize);
+
             if (repoList.length === 0) {
                 return { labels: [], labelMap: new Map() };
             }
 
-            const labelMap = await fetchLabelsInBatches(repoList, token, config);
+            // Also force sequential requests when unauthenticated
+            const effectiveConfig = !token ? { ...config, sampleSize: effectiveSampleSize, maxConcurrentRequests: 1 } : config;
+            const labelMap = await fetchLabelsInBatches(repoList, token, effectiveConfig);
             const labels = Array.from(labelMap.values());
 
             return { labels, labelMap };

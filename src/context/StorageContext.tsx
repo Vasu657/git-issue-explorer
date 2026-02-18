@@ -16,6 +16,11 @@ interface StorageContextType {
     setFilters: (filters: import('@/types/github').SearchFilters) => void;
     discoveredLabels: import('@/types/github').GitHubLabel[];
     addDiscoveredLabels: (labels: import('@/types/github').GitHubLabel[]) => void;
+    searchHistory: string[];
+    addToHistory: (query: string) => void;
+    clearHistory: () => void;
+    seenIssueIds: Set<number>;
+    markAsSeen: (id: number) => void;
     isHydrated: boolean;
 }
 
@@ -27,6 +32,8 @@ const SCOPES_KEY = 'gf:scopes:v1';
 const BOOKMARKS_KEY = 'gf:bookmarks:v1';
 const FILTERS_KEY = 'gf:filters:v1';
 const LABELS_KEY = 'gf:labels:v1';
+const HISTORY_KEY = 'gf:search_history:v1';
+const SEEN_ISSUES_KEY = 'gf:seen_issues:v1';
 
 export function StorageProvider({ children }: { children: React.ReactNode }) {
     const [token, setTokenState] = useState<string | null>(null);
@@ -36,6 +43,8 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
     const [bookmarks, setBookmarksState] = useState<GitHubIssue[]>([]);
     const [filters, setFiltersState] = useState<import('@/types/github').SearchFilters | null>(null);
     const [discoveredLabels, setDiscoveredLabels] = useState<import('@/types/github').GitHubLabel[]>([]);
+    const [searchHistory, setSearchHistory] = useState<string[]>([]);
+    const [seenIssueIds, setSeenIssueIds] = useState<Set<number>>(new Set());
     const [isHydrated, setIsHydrated] = useState(false);
 
     // Load initial state
@@ -58,6 +67,12 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
 
             const storedLabels = localStorage.getItem(LABELS_KEY);
             if (storedLabels) setDiscoveredLabels(JSON.parse(storedLabels));
+
+            const storedHistory = localStorage.getItem(HISTORY_KEY);
+            if (storedHistory) setSearchHistory(JSON.parse(storedHistory));
+
+            const storedSeen = localStorage.getItem(SEEN_ISSUES_KEY);
+            if (storedSeen) setSeenIssueIds(new Set(JSON.parse(storedSeen)));
         } catch (e) {
             console.error('Failed to load storage:', e);
         } finally {
@@ -188,6 +203,34 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
         });
     }, []);
 
+    const addToHistory = useCallback((query: string) => {
+        if (!query.trim()) return;
+        setSearchHistory((prev) => {
+            const trimmedQuery = query.trim();
+            // Don't add if it's too short
+            if (trimmedQuery.length < 2) return prev;
+
+            const next = [trimmedQuery, ...prev.filter((q) => q !== trimmedQuery)].slice(0, 10);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+            return next;
+        });
+    }, []);
+
+    const clearHistory = useCallback(() => {
+        localStorage.removeItem(HISTORY_KEY);
+        setSearchHistory([]);
+    }, []);
+
+    const markAsSeen = useCallback((id: number) => {
+        setSeenIssueIds((prev) => {
+            if (prev.has(id)) return prev;
+            const next = new Set(prev);
+            next.add(id);
+            localStorage.setItem(SEEN_ISSUES_KEY, JSON.stringify(Array.from(next)));
+            return next;
+        });
+    }, []);
+
     // Sync bookmarks across tabs/windows
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -237,6 +280,11 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
                 setFilters,
                 discoveredLabels,
                 addDiscoveredLabels,
+                searchHistory,
+                addToHistory,
+                clearHistory,
+                seenIssueIds,
+                markAsSeen,
                 isHydrated,
             }}
         >

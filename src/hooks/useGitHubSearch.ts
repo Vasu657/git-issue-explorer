@@ -25,23 +25,12 @@ function buildQuery(search: string, filters: SearchFilters): string {
     parts.push(`label:"${label}"`);
   });
 
-  // Add issue type
-  if (filters.issueType) {
-    parts.push(`label:"Type: ${filters.issueType}"`);
-    parts.push(`label:"${filters.issueType.toLowerCase()}"`);
-  }
-
   // Add priority
   if (filters.priority) {
     parts.push(`label:"priority: ${filters.priority.toLowerCase()}"`);
     parts.push(`label:"${filters.priority.toLowerCase()}"`);
   }
 
-  // Add status labels
-  if (filters.labelStatus) {
-    parts.push(`label:"Status: ${filters.labelStatus}"`);
-    parts.push(`label:"${filters.labelStatus.toLowerCase()}"`);
-  }
 
   if (filters.language) {
     parts.push(`language:${filters.language}`);

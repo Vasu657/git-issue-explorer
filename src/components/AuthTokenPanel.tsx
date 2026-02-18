@@ -69,7 +69,7 @@ const AuthTokenPanel = () => {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-background border-border/50 overflow-y-auto p-6">
+      <SheetContent side="right" className="w-full sm:w-[540px] bg-background border-border/50 overflow-y-auto p-4 sm:p-6">
         <SheetHeader className="pb-6 border-b border-border/40">
           <SheetTitle className="text-xl font-bold flex items-center gap-2.5">
             <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${user ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
@@ -87,9 +87,9 @@ const AuthTokenPanel = () => {
           {user && (
             <div className="bg-card/50 rounded-xl border border-border/50 p-6 space-y-6">
               <div className="flex items-start gap-4">
-                <img src={user.avatar_url} alt={user.login} className="h-16 w-16 rounded-full border-2 border-border" />
-                <div className="space-y-1">
-                  <h3 className="font-bold text-lg">{user.name || user.login}</h3>
+                <img src={user.avatar_url} alt={user.login} className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border-2 border-border" />
+                <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg truncate">{user.name || user.login}</h3>
                   <p className="text-muted-foreground">@{user.login}</p>
                   <a href={user.html_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-1">
                     View Profile <ExternalLink className="h-3 w-3" />
@@ -169,7 +169,7 @@ const AuthTokenPanel = () => {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4 space-y-3">
+              <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4 space-y-4">
                 <div className="flex gap-2">
                   <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div className="text-sm text-blue-700 dark:text-blue-300">
@@ -180,6 +180,16 @@ const AuthTokenPanel = () => {
                       <li>Verify your identity</li>
                     </ul>
                   </div>
+                </div>
+                <div className="pt-3 border-t border-blue-500/10 space-y-3">
+                  <p className="text-xs text-blue-700/80 dark:text-blue-300/80 leading-relaxed">
+                    Don't have a token? Create a <strong>Classic PAT</strong> with the <code className="bg-blue-500/10 px-1 rounded">repo</code> scope for full access.
+                  </p>
+                  <Button variant="outline" size="sm" asChild className="w-full h-8 text-[11px] bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 transition-colors">
+                    <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                      Generate New Token <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </Button>
                 </div>
               </div>
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthToken } from "./useAuthToken";
 import type { GitHubIssue } from "@/types/github";
+import { isRateLimited } from "@/lib/github-cache";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -59,7 +60,9 @@ async function fetchRepoLanguages(
         );
 
         if (!response.ok) {
-            console.warn(`Failed to fetch languages for ${repoFullName}: ${response.status}`);
+            if (response.status !== 403 && response.status !== 429) {
+                console.warn(`Failed to fetch languages for ${repoFullName}: ${response.status}`);
+            }
             return {};
         }
 
@@ -126,11 +129,18 @@ export function useRepositoryLanguages(
     const { data, isLoading, error } = useQuery({
         queryKey: ["repository-languages", repoKey, config.sampleSize],
         queryFn: async () => {
-            if (repositories.length === 0) {
+            if (repositories.length === 0 || isRateLimited()) {
                 return { languages: [], languageMap: new Map() };
             }
 
-            const languageMap = await fetchLanguagesInBatches(repositories, token, config);
+            // Adjust config if unauthenticated to be more conservative
+            const effectiveConfig = !token ? {
+                ...config,
+                sampleSize: Math.min(config.sampleSize, 3), // Very low sample size when unauthenticated
+                maxConcurrentRequests: 1 // Sequential requests when unauthenticated
+            } : config;
+
+            const languageMap = await fetchLanguagesInBatches(repositories, token, effectiveConfig);
 
             // Sort languages by total bytes (most used first)
             const languages = Array.from(languageMap.entries())

@@ -8,11 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink, Calendar, User, CircleDot, CheckCircle2 } from "lucide-react";
+import { useTheme } from "next-themes";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { formatDistanceToNow } from "date-fns";
 import type { GitHubIssue } from "@/types/github";
+import { getLabelStyles } from "@/lib/colors";
+import { BookmarkToggle } from "./BookmarkToggle";
 
 interface IssueDetailsModalProps {
     issue: GitHubIssue | null;
@@ -25,6 +28,7 @@ const IssueDetailsModal = ({
     open,
     onOpenChange,
 }: IssueDetailsModalProps) => {
+    const { theme } = useTheme();
     if (!issue) return null;
 
     const timeAgo = formatDistanceToNow(new Date(issue.created_at), {
@@ -39,19 +43,22 @@ const IssueDetailsModal = ({
                 <div className="flex-1 overflow-y-auto w-full">
                     <div className="p-6 sm:p-8">
                         {/* Header Section */}
-                        <div className="mb-6 space-y-4">
+                        <div className="mb-6 space-y-4 relative pr-14">
                             <div className="flex items-start justify-between gap-4">
                                 <DialogTitle className="text-2xl sm:text-3xl leading-tight font-semibold text-foreground">
                                     {issue.title} <span className="text-muted-foreground font-light">#{issue.number}</span>
                                 </DialogTitle>
+                            </div>
+                            <div className="absolute top-1/2 -translate-y-1/2 right-0">
+                                <BookmarkToggle issue={issue} className="h-11 w-11 shadow-sm" />
                             </div>
 
                             <div className="flex flex-wrap items-center gap-3 pb-4 border-b border-border/40 text-sm text-foreground/80">
                                 <Badge
                                     variant={issue.state === "open" ? "default" : "secondary"}
                                     className={`capitalize px-3 py-1 text-sm font-medium rounded-full ${issue.state === "open"
-                                            ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
-                                            : "bg-purple-600 hover:bg-purple-700 text-white border-transparent"
+                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
+                                        : "bg-purple-600 hover:bg-purple-700 text-white border-transparent"
                                         }`}
                                 >
                                     {issue.state === "open" ? (
@@ -147,19 +154,22 @@ const IssueDetailsModal = ({
                                     </h3>
                                     <div className="flex flex-wrap gap-1.5">
                                         {issue.labels.length > 0 ? (
-                                            issue.labels.map((label) => (
-                                                <span
-                                                    key={label.id}
-                                                    className="text-xs leading-none px-2 py-1 rounded-full font-medium"
-                                                    style={{
-                                                        backgroundColor: `#${label.color}25`,
-                                                        color: `#${label.color}`,
-                                                        border: `1px solid #${label.color}40`,
-                                                    }}
-                                                >
-                                                    {label.name}
-                                                </span>
-                                            ))
+                                            issue.labels.map((label) => {
+                                                const styles = getLabelStyles(label.color, theme);
+                                                return (
+                                                    <span
+                                                        key={label.id}
+                                                        className="text-xs leading-none px-2 py-1 rounded-full font-medium"
+                                                        style={{
+                                                            backgroundColor: styles.backgroundColor,
+                                                            color: styles.color,
+                                                            border: styles.border,
+                                                        }}
+                                                    >
+                                                        {label.name}
+                                                    </span>
+                                                );
+                                            })
                                         ) : (
                                             <span className="text-sm text-muted-foreground">None yet</span>
                                         )}

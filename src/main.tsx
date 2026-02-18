@@ -25,13 +25,17 @@ const persister = createSyncStoragePersister({
     storage: window.localStorage,
 });
 
+import { HelmetProvider } from "react-helmet-async";
+
 createRoot(document.getElementById("root")!).render(
-    <StorageProvider>
-        <PersistQueryClientProvider
-            client={queryClient}
-            persistOptions={{ persister }}
-        >
-            <App />
-        </PersistQueryClientProvider>
-    </StorageProvider>
+    <HelmetProvider>
+        <StorageProvider>
+            <PersistQueryClientProvider
+                client={queryClient}
+                persistOptions={{ persister }}
+            >
+                <App />
+            </PersistQueryClientProvider>
+        </StorageProvider>
+    </HelmetProvider>
 );
